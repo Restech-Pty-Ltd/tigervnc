@@ -58,12 +58,17 @@ add_library(rfb STATIC
   UpdateTracker.cxx
   VNCSConnectionST.cxx
   VNCServerST.cxx
+  JSONWhiteList.cxx
   ZRLEEncoder.cxx
   ZRLEDecoder.cxx
   encodings.cxx
   obfuscate.cxx
   util.cxx)
 
+find_package(Boost 1.65.1 REQUIRED)
+find_package(nlohmann_json 3.2.0 REQUIRED)
+
+target_include_directories(rfb SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
 target_include_directories(rfb PUBLIC ${CMAKE_SOURCE_DIR}/common)
 target_include_directories(rfb SYSTEM PUBLIC ${JPEG_INCLUDE_DIR})
 target_include_directories(rfb SYSTEM PUBLIC ${PIXMAN_INCLUDE_DIRS})

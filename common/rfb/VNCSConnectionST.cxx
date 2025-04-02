@@ -145,6 +145,11 @@ void VNCSConnectionST::close(const char* reason)
 
 // Methods called from VNCServerST
 
+void VNCSConnectionST::forceSecurityNone()
+{
+  SConnection::forceSecurityNone();
+}
+
 bool VNCSConnectionST::init()
 {
   try {

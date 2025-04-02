@@ -36,7 +36,7 @@ namespace rfb {
   public:
     // getVncAuthPasswd() fills buffer of given password and readOnlyPassword.
     // If there was no read only password in the file, readOnlyPassword buffer is null.
-    virtual void getVncAuthPasswd(std::string *password, std::string *readOnlyPassword)=0;
+    virtual void getVncAuthPasswd(std::string *password, std::string *readOnlyPassword, bool UseMD5)=0;
 
     virtual ~VncAuthPasswdGetter() { }
   };
@@ -44,7 +44,7 @@ namespace rfb {
   class VncAuthPasswdParameter : public VncAuthPasswdGetter, BinaryParameter {
   public:
     VncAuthPasswdParameter(const char* name, const char* desc, StringParameter* passwdFile_);
-    virtual void getVncAuthPasswd(std::string *password, std::string *readOnlyPassword);
+    virtual void getVncAuthPasswd(std::string *password, std::string *readOnlyPassword, bool UseMD5);
   protected:
     StringParameter* passwdFile;
   };
@@ -57,6 +57,7 @@ namespace rfb {
     virtual const char* getUserName() const {return 0;}
     virtual AccessRights getAccessRights() const { return accessRights; }
     static StringParameter vncAuthPasswdFile;
+    static BoolParameter vncAuthMD5PasswdFile;
     static VncAuthPasswdParameter vncAuthPasswd;
   private:
     bool verifyResponse(const char* password);

@@ -72,7 +72,7 @@ bool network::isSocketListening(int sock)
 
 Socket::Socket(int fd)
   : instream(0), outstream(0),
-    isShutdown_(false), queryConnection(false)
+    isShutdown_(false), queryConnection(false), authBypass(false)
 {
   initSockets();
   setFd(fd);
@@ -80,7 +80,7 @@ Socket::Socket(int fd)
 
 Socket::Socket()
   : instream(0), outstream(0),
-    isShutdown_(false), queryConnection(false)
+    isShutdown_(false), queryConnection(false), authBypass(false)
 {
   initSockets();
 }

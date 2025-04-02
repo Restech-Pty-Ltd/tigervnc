@@ -165,6 +165,13 @@ void VNCServerST::addSocket(network::Socket* sock, bool outgoing, AccessRights a
 
   VNCSConnectionST* client = new VNCSConnectionST(this, sock, outgoing, accessRights);
   clients.push_front(client);
+  
+  if (whitelist->isWhitelisted(address))
+  {
+    connectionsLog.status("Whitelisted Connection: %s", address);
+    client->forceSecurityNone();
+  }
+  
   client->init();
 }
 
@@ -877,4 +884,10 @@ bool VNCServerST::getComparerState()
       return true;
   }
   return false;
+}
+
+void VNCServerST::addWhitelistFile(const char* fname)
+{
+  whitelist = new JSONWhiteList(fname);
+  
 }

@@ -36,6 +36,7 @@
 #include <rfb/EncodeManager.h>
 #include <rfb/SSecurity.h>
 #include <rfb/util.h>
+#include <rfb/SSecurityNone.h>
 
 #include <rfb/LogWriter.h>
 
@@ -50,7 +51,7 @@ SConnection::SConnection(AccessRights accessRights)
     state_(RFBSTATE_UNINITIALISED), preferredEncoding(encodingRaw),
     accessRights(accessRights), hasRemoteClipboard(false),
     hasLocalClipboard(false),
-    unsolicitedClipboardAttempt(false)
+    unsolicitedClipboardAttempt(false), isSecurityTypeNoneForced(false)
 {
   defaultMajorVersion = 3;
   defaultMinorVersion = 8;
@@ -69,6 +70,12 @@ void SConnection::setStreams(rdr::InStream* is_, rdr::OutStream* os_)
 {
   is = is_;
   os = os_;
+}
+
+void SConnection::forceSecurityNone()
+{
+  ssecurity = new SSecurityNone(this);
+  isSecurityTypeNoneForced = true;
 }
 
 void SConnection::initialiseProtocol()
@@ -150,6 +157,25 @@ bool SConnection::processVersionMsg()
 
   versionReceived();
 
+  /* If we've been forced to a security setting, apply that. */
+  if (ssecurity != 0)
+  {
+    // need to handle the client version here
+    if (client.isVersion(3, 3)) {
+      os->writeU32(ssecurity->getType());
+      if (ssecurity->getType() == secTypeNone) os->flush();
+      state_ = RFBSTATE_SECURITY;
+    }
+    else {
+      os->writeU8(1);
+      os->writeU8(ssecurity->getType());
+      os->flush();
+      state_ = RFBSTATE_SECURITY_TYPE;
+    }
+    
+    return true;
+  }
+
   std::list<uint8_t> secTypes;
   std::list<uint8_t>::iterator i;
   secTypes = security.GetEnabledSecTypes();
@@ -209,6 +235,16 @@ void SConnection::processSecurityType(int secType)
   std::list<uint8_t>::iterator i;
 
   secTypes = security.GetEnabledSecTypes();
+
+  /* Skip the normal check to enable the force. */
+  if (isSecurityTypeNoneForced && secType == secTypeNone)
+  {
+    vlog.info("Client requests security type %s(%d)",
+      secTypeName(secType), secType);
+    state_ = RFBSTATE_SECURITY;
+    return;
+  }
+  
   for (i=secTypes.begin(); i!=secTypes.end(); i++)
     if (*i == secType) break;
   if (i == secTypes.end())

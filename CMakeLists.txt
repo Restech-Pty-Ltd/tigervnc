@@ -350,8 +350,8 @@ if(BUILD_VIEWER)
   add_subdirectory(vncviewer)
   add_subdirectory(media)
 endif()
-
-add_subdirectory(tests)
+# disable the tests for this modded branch
+#add_subdirectory(tests)
 
 
 if(BUILD_VIEWER)

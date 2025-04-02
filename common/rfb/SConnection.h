@@ -65,6 +65,10 @@ namespace rfb {
     // InStream.  You must have called initialiseProtocol() first.
     bool processMsg();
 
+    // forceSecurityNone() is called to force the use of the "None" security
+    // type.  This is used when the connection has been whitelisted.
+    void forceSecurityNone();
+
     // approveConnection() is called to either accept or reject the connection.
     // If accept is false, the reason string gives the reason for the
     // rejection.  It can either be called directly from queryConnection() or
@@ -262,6 +266,7 @@ namespace rfb {
     bool hasRemoteClipboard;
     bool hasLocalClipboard;
     bool unsolicitedClipboardAttempt;
+    bool isSecurityTypeNoneForced;
   };
 }
 #endif

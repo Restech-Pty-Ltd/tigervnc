@@ -32,6 +32,7 @@
 #include <rfb/Cursor.h>
 #include <rfb/Timer.h>
 #include <rfb/ScreenSet.h>
+#include <rfb/JSONWhiteList.h>
 
 namespace rfb {
 
@@ -58,6 +59,10 @@ namespace rfb {
     //   structure for the socket & initialise it.
     virtual void addSocket(network::Socket* sock, bool outgoing=false,
                            AccessRights ar=AccessDefault);
+
+    // addWhitelistFile
+    //  The name of any JSON whitelist file to be used by the server. pass an empty string if none required. 
+    void addWhitelistFile(const char* fname);
 
     // removeSocket
     //   Clean up any resources associated with the Socket
@@ -173,6 +178,8 @@ namespace rfb {
   protected:
     Blacklist blacklist;
     Blacklist* blHosts;
+
+    JSONWhiteList* whitelist;
 
     SDesktop* desktop;
     bool desktopStarted;

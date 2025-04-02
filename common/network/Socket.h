@@ -66,6 +66,7 @@ namespace network {
     rdr::FdOutStream* outstream;
     bool isShutdown_;
     bool queryConnection;
+    bool authBypass;
   };
 
   class ConnectionFilter {

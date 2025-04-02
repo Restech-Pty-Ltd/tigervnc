@@ -58,6 +58,10 @@ namespace rfb {
     // returns false, and close() will have been called.
     bool init();
 
+    // forceSecurityNone() forces the client to use the "None" security type.
+    // This is used when the connection has been whitelisted by the hostfile.
+    void forceSecurityNone();
+
     // processMessages() processes incoming messages from the client, invoking
     // various callbacks as a result.  It continues to process messages until
     // reading might block.  shutdown() will be called on the connection's
