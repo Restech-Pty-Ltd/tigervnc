@@ -51,8 +51,6 @@ AliasParameter rfbauth("rfbauth", "Alias for PasswordFile",
 VncAuthPasswdParameter SSecurityVncAuth::vncAuthPasswd
 ("Password", "Obfuscated binary encoding of the password which clients must supply to "
  "access the server", &SSecurityVncAuth::vncAuthPasswdFile);
-BoolParameter SSecurityVncAuth::vncAuthMD5PasswdFile
-("MD5PasswordFile", "Use MD5 Hash to read Password file for VNC authentication", false, ConfServer);
 
 SSecurityVncAuth::SSecurityVncAuth(SConnection* sc)
   : SSecurity(sc), sentChallenge(false),
@@ -73,7 +71,6 @@ bool SSecurityVncAuth::verifyResponse(const char* password)
   for (int j = 0; j < vncAuthChallengeSize; j += 8)
     des(challenge+j, expectedResponse+j);
 
-  vlog.info("Response: %s, Expected response: %s", response, expectedResponse);
   // Check the actual response
   return memcmp(response, expectedResponse, vncAuthChallengeSize) == 0;
 }
@@ -100,7 +97,7 @@ bool SSecurityVncAuth::processMsg()
   is->readBytes(response, vncAuthChallengeSize);
 
   std::string passwd, passwdReadOnly;
-  pg->getVncAuthPasswd(&passwd, &passwdReadOnly, vncAuthMD5PasswdFile);
+  pg->getVncAuthPasswd(&passwd, &passwdReadOnly);
 
   if (passwd.empty())
     throw AuthFailureException("No password configured for VNC Auth");
@@ -125,7 +122,7 @@ VncAuthPasswdParameter::VncAuthPasswdParameter(const char* name,
 : BinaryParameter(name, desc, 0, 0, ConfServer), passwdFile(passwdFile_) {
 }
 
-void VncAuthPasswdParameter::getVncAuthPasswd(std::string *password, std::string *readOnlyPassword, bool UseMD5) {
+void VncAuthPasswdParameter::getVncAuthPasswd(std::string *password, std::string *readOnlyPassword) {
   std::vector<uint8_t> obfuscated, obfuscatedReadOnly;
   obfuscated = getData();
 
@@ -143,24 +140,12 @@ void VncAuthPasswdParameter::getVncAuthPasswd(std::string *password, std::string
         return;
       }
 
-      if (UseMD5) {
-        vlog.debug("reading MD5 password file");
-        obfuscated.resize(8);
-        obfuscated.resize(fread(obfuscated.data(), 1, 8, fp));
-        obfuscatedReadOnly.resize(8);
-        obfuscatedReadOnly.resize(fread(obfuscatedReadOnly.data(), 1, 8, fp));
-        fclose(fp);
-      } 
-      else {
-        vlog.debug("reading password file");
-        obfuscated.resize(8);
-        obfuscated.resize(fread(obfuscated.data(), 1, 8, fp));
-        obfuscatedReadOnly.resize(8);
-        obfuscatedReadOnly.resize(fread(obfuscatedReadOnly.data(), 1, 8, fp));
-        fclose(fp);
-      }
-
-      
+      vlog.debug("reading password file");
+      obfuscated.resize(8);
+      obfuscated.resize(fread(obfuscated.data(), 1, 8, fp));
+      obfuscatedReadOnly.resize(8);
+      obfuscatedReadOnly.resize(fread(obfuscatedReadOnly.data(), 1, 8, fp));
+      fclose(fp);
     } else {
       vlog.info("%s parameter not set", getName());
     }
@@ -171,7 +156,6 @@ void VncAuthPasswdParameter::getVncAuthPasswd(std::string *password, std::string
 
   try {
     *password = deobfuscate(obfuscated.data(), obfuscated.size());
-    vlog.info("password: %s", password->c_str());
     *readOnlyPassword = deobfuscate(obfuscatedReadOnly.data(), obfuscatedReadOnly.size());
   } catch (...) {
   }

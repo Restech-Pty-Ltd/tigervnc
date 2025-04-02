@@ -35,10 +35,6 @@ bool JSONWhiteList::isWhitelisted(std::string client_ip)
   if (fileName == NULL)
     return false;
 
-  if (client_ip == "127.0.0.1")
-    return true;
-
-  
   if (!reloadEntries()) {
     vlog.error("Could not read IP filtering rules: rejecting all clients");
     return false;
