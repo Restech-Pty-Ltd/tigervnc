@@ -51,6 +51,7 @@ else()
 endif()
 
 target_link_libraries(x0vncserver ${X11_LIBRARIES})
+target_link_libraries(x0vncserver ${Boost_LIBRARIES})
 
 install(TARGETS x0vncserver DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
 install(FILES x0vncserver.man DESTINATION ${CMAKE_INSTALL_FULL_MANDIR}/man1 RENAME x0vncserver.1)

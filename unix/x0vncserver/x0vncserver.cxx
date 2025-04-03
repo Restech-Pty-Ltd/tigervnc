@@ -72,6 +72,7 @@ IntParameter rfbport("rfbport", "TCP port to listen for RFB protocol",5900);
 StringParameter rfbunixpath("rfbunixpath", "Unix socket to listen for RFB protocol", "");
 IntParameter rfbunixmode("rfbunixmode", "Unix socket access mode", 0600);
 StringParameter hostsFile("HostsFile", "File with IP access control rules", "");
+StringParameter whitelistFile("whitelistFile", "File with IP addresses which are not required to authenticate", "");
 BoolParameter localhostOnly("localhost",
                             "Only allow connections from localhost",
                             false);
@@ -338,6 +339,8 @@ int main(int argc, char** argv)
 
     VNCServerST server(desktopName, &desktop);
 
+    server.addWhitelistFile(whitelistFile);
+
     if (createSystemdListeners(&listeners) > 0) {
       // When systemd is in charge of listeners, do not listen to anything else
       vlog.info("Listening on systemd sockets");
@@ -366,12 +369,15 @@ int main(int argc, char** argv)
                   (int)rfbport);
       }
 
-      FileTcpFilter fileTcpFilter(hostsFile);
+      
       if (strlen(hostsFile) != 0)
+      {
+        FileTcpFilter *fileTcpFilter = new FileTcpFilter(hostsFile);
         for (std::list<SocketListener*>::iterator i = listeners.begin();
              i != listeners.end();
              i++)
-          (*i)->setFilter(&fileTcpFilter);
+          (*i)->setFilter(fileTcpFilter);
+      }
     }
 
     if (listeners.empty()) {
