@@ -52,6 +52,12 @@ bool JSONWhiteList::isWhitelisted(std::string client_ip)
     return true;
   }
 
+  if (client_ip == "127.0.0.1")
+  {
+    /* Always accept local connections. */
+    return true;
+  }
+
   // iterate the array
   for (const auto& entry : data["whitelisted"]) {
     std::string ip = entry["ip"];
